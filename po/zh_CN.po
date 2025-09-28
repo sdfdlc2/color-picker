@@ -17,11 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: src/ui.js:344
+#: src/ui.js:366
 msgid "Mismatched filetype"
 msgstr "文件类型不匹配"
 
-#: src/ui.js:462
+#: src/ui.js:488
 msgid "Click or press ENTER to apply changes"
 msgstr "单击或按回车应用更改"
 
@@ -117,19 +117,19 @@ msgstr "(原始)数值"
 msgid "percent value"
 msgstr "百分数"
 
-#: src/extension.js:141
+#: src/extension.js:133
 msgid "Others"
 msgstr "其它"
 
-#: src/extension.js:590
+#: src/extension.js:588
 msgid "Default format"
 msgstr "默认格式"
 
-#: src/extension.js:615
+#: src/extension.js:613
 msgid "Color picked"
 msgstr "已拾取颜色"
 
-#: src/extension.js:622
+#: src/extension.js:620
 #, javascript-format
 msgid "%s is picked."
 msgstr "已拾取%s。"
@@ -195,8 +195,8 @@ msgid "_Enable systray"
 msgstr "系统托盘(_E)"
 
 #: src/prefs.js:75
-msgid "Right click to open menu"
-msgstr "右键打开菜单"
+msgid "Secondary click to open menu"
+msgstr "次键打开菜单"
 
 #: src/prefs.js:75
 msgid "Menu shortcuts"
@@ -220,7 +220,7 @@ msgstr "复制颜色"
 
 #: src/prefs.js:79
 msgid "primary click"
-msgstr "左键"
+msgstr "主键"
 
 #: src/prefs.js:80
 msgid "remove the color"
@@ -236,15 +236,15 @@ msgstr "触发末尾按钮"
 
 #: src/prefs.js:81
 msgid "secondary click"
-msgstr "右键"
+msgstr "次键"
 
 #: src/prefs.js:83
 msgid "E_nable shortcut"
 msgstr "快捷键(_N)"
 
 #: src/prefs.js:83
-msgid "Left click or press Enter / Space key to pick"
-msgstr "左键或按回车/空格键选取"
+msgid "Primary click or press Enter / Space key to pick"
+msgstr "主键或按回车/空格键选取"
 
 #: src/prefs.js:84
 msgid "F_ormat menu"
@@ -259,8 +259,8 @@ msgid "_Persistent mode"
 msgstr "持续模式(_P)"
 
 #: src/prefs.js:85
-msgid "Right click or press Esc key to quit"
-msgstr "右键或按 Esc 键退出"
+msgid "Secondary click or press Esc key to quit"
+msgstr "次键或按 Esc 键退出"
 
 #: src/prefs.js:86
 msgid "P_review style"
@@ -300,54 +300,54 @@ msgstr "通知声音(_I)"
 msgid "Play the sound after picking"
 msgstr "选取颜色后响铃"
 
-#: src/prefs.js:158
+#: src/prefs.js:155
 msgid "Custom"
 msgstr "自便"
 
-#: src/prefs.js:175
-msgid "_New Color Format"
-msgstr "新建颜色格式(_N)"
-
-#: src/prefs.js:181
+#: src/prefs.js:163
 #, javascript-format
 msgid "Removed <i>%s</i> format"
 msgstr "已移除 <i>%s</i> 格式 "
 
-#: src/prefs.js:210
+#: src/prefs.js:172
+msgid "_New Color Format"
+msgstr "新建颜色格式(_N)"
+
+#: src/prefs.js:202
 msgid "Preset"
 msgstr "预设"
 
-#: src/prefs.js:215 src/prefs.js:218
+#: src/prefs.js:207 src/prefs.js:210
 msgid "Edit Color Format"
 msgstr "编辑颜色格式"
 
-#: src/prefs.js:225
+#: src/prefs.js:217
 msgid "Name"
 msgstr "名称"
 
-#: src/prefs.js:225
+#: src/prefs.js:217
 msgid "Format"
 msgstr "格式"
 
-#: src/prefs.js:226
+#: src/prefs.js:218
 msgid "The following parameters can be used:"
 msgstr "下列参数可用:"
 
-#: src/prefs.js:228
+#: src/prefs.js:220
 msgid "The color values can be formatted with (optional trailing precision):"
 msgstr "颜色值可格式化为(后可跟精度):"
 
-#: src/prefs.js:230
+#: src/prefs.js:222
 msgid ""
 "E.g., <tt>{Blf3}</tt> means the normalized blue value accurate to 3 decimal "
 "places."
 msgstr "例如，<tt>{Blf3}</tt> 表示精确到千分位的归一化蓝色值。"
 
-#: src/prefs.js:240
+#: src/prefs.js:232
 msgid "_Basic"
 msgstr "基本(_B)"
 
-#: src/prefs.js:241
+#: src/prefs.js:233
 msgid "_Format"
 msgstr "格式(_F)"
 
@@ -376,7 +376,7 @@ msgstr "格式(_F)"
 #~ "<b>Menu item</b>\n"
 #~ "left click to copy the color\n"
 #~ "middle click or press Delete/Backspace key to remove the color\n"
-#~ "right click or press Ctrl key to trigger the tail button"
+#~ "seco click or press Ctrl key to trigger the tail button"
 #~ msgstr ""
 #~ "<b>菜单</b>\n"
 #~ "按左 Shift 键切换历史/收藏菜单\n"

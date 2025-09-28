@@ -89,20 +89,6 @@ class ColorSlider extends Slider.Slider {
     }
 }
 
-class SliderItem extends PopupMenu.PopupBaseMenuItem {
-    static {
-        T.enrol(this);
-    }
-
-    constructor(form, value, step, color, callback) {
-        let slider = new ColorSlider(form, value, step, color, callback);
-        super({activate: false})[$]
-            .set({setup: v => { slider._value = v; slider.queue_repaint(); }})[$]
-            .connect('key-press-event', (_a, event) => slider.vfunc_key_press_event(event))[$$]
-            .add_child([new St.Label({text: form.slice(0, 1).toUpperCase(), xExpand: false}), slider]);
-    }
-}
-
 class ColorMenu extends PopupMenu.PopupMenu {
     constructor(color) {
         let cursor = Main.layoutManager.dummyCursor;
@@ -114,8 +100,14 @@ class ColorMenu extends PopupMenu.PopupMenu {
     }
 
     $addItems() {
-        let {r, g, b, Hu, Sl, Ll, Lo, Co, Ho} = this.$color.toItems((k, v, u, s) =>
-            new SliderItem(k, v, s ?? 1 / Math.max(u ?? 1, 100), this.$color, (...xs) => this.#updateSliders(...xs)));
+        let {r, g, b, Hu, Sl, Ll, Lo, Co, Ho} = this.$color.toItems((form, value, unit, step) => {
+            step ??= 1 / Math.max(unit ?? 1, 100);
+            let slider = new ColorSlider(form, value, step, this.$color, (...xs) => this.#updateSliders(...xs));
+            return new PopupMenu.PopupBaseMenuItem({activate: false})[$]
+                .set({setup: v => { slider._value = v; slider.queue_repaint(); }})[$]
+                .connect('key-press-event', (_a, event) => slider.vfunc_key_press_event(event))[$$]
+                .add_child([new St.Label({text: form.slice(0, 1).toUpperCase(), xExpand: false}), slider]);
+        });
         M.Item.add(this.$menu = {
             HEX: this.#genTitleItem(),
             RGB: new M.Separator(), r, g, b,
@@ -124,7 +116,7 @@ class ColorMenu extends PopupMenu.PopupMenu {
             custom: this.#genCustomSection(),
         }, this); // TODO: ? replace HSL and OKLCH with OKHSL, see https://github.com/w3c/csswg-drafts/issues/8659 and https://bottosson.github.io/posts/colorpicker/
         Main.layoutManager.addTopChrome(this.actor[$].hide()[$].add_style_class_name('color-picker-menu')[$]
-            .connect('key-press-event', (_a, e) => { M.altNum(e, this.$menu.HEX); }));
+            .connect('key-press-event', (_a, e) => void M.altNum(e, this.$menu.HEX)));
     }
 
     #updateSliders(form, value) {
@@ -137,9 +129,7 @@ class ColorMenu extends PopupMenu.PopupMenu {
     #genCustomSection() {
         let items = this.$formats.map(x => new M.Item('', () => this.$emitSelected(x)));
         this.$updateCustomLabels = () => items.forEach((x, i) => x.label.set_text(this.$color.toText(this.$formats[i])));
-        return new PopupMenu.PopupMenuSection()[$_]
-            .addMenuItem(items.length, new M.Separator(_('Others')))[$$]
-            .addMenuItem(items);
+        return new PopupMenu.PopupMenuSection()[$$].addMenuItem(items.length ? [new M.Separator(_('Others')), ...items] : items);
     }
 
     #genTitleItem() {
@@ -492,8 +482,7 @@ class ColorTray extends M.Systray {
             color => this.$set.set(K.CLCT, this[K.CLCT].includes(color)
                 ? this[K.CLCT].filter(x => x !== color) : [color][$].push(...this[K.CLCT]).slice(0, this[K.MNSZ])),
             color => this[K.MNTP] ? this.$set.set(K.CLCT, this[K.CLCT].filter(x => x !== color))
-                : this.$set.set(K.HIST, this[K.HIST].filter(x => x !== color))),
-        this.#getColors());
+                : this.$set.set(K.HIST, this[K.HIST].filter(x => x !== color))), this.#getColors());
     }
 
     $buildWidgets(formats, callback, fmts) {
@@ -511,7 +500,7 @@ class ColorTray extends M.Systray {
 
     #onKeyPress(_a, event) {
         let key = event.get_key_symbol();
-        if(M.altNum(event, this.$menu.tool), key);
+        if(M.altNum(event, this.$menu.tool, key));
         else if(key === Clutter.KEY_Shift_R) this.$set.not(K.MNTP);
     }
 
@@ -525,7 +514,9 @@ class ColorTray extends M.Systray {
         };
     }
 
-    $onColorsSet() { this.$menu.tint?.setup(this.#getColors()); }
+    $onColorsSet() {
+        this.$menu.tint?.setup(this.#getColors());
+    }
 
     #getColors() {
         return this[K.MNTP] ? this[K.CLCT].map(x => [true, x, this.$formats])
@@ -542,8 +533,13 @@ class ColorTray extends M.Systray {
         return super.vfunc_event(event);
     }
 
-    addHistory(color) { if(this.$tint) this.$set.set(K.HIST, [color][$].push(...this[K.HIST]).slice(0, this[K.MNSZ])); }
-    setFormats(formats) { this[$].$formats(formats).$onColorsSet(); }
+    addHistory(color) {
+        if(this.$tint) this.$set.set(K.HIST, [color, ...this[K.HIST]].slice(0, this[K.MNSZ]));
+    }
+
+    setFormats(formats) {
+        this[$].$formats(formats).$onColorsSet();
+    }
 }
 
 class ColorPicker extends F.Mortal {
@@ -596,7 +592,7 @@ class ColorPicker extends F.Mortal {
 
     summon() {
         if(this.$src.area.active) return;
-        this.$src.tray.hub?.add_style_pseudo_class('state-busy'); // FIXME: works later than screenshot on first run
+        this.$src.tray.hub?.add_style_pseudo_class('state-busy'); // FIXME: not working on the first run
         this.$src.area.summon([['end-pick', () => this.dispel()], ['notify-color', (_a, x) => this.inform(x)]],
             this.$set, false, this[K.FMT] ? this[K.FMTS] : Format.HEX, this.$formats);
     }

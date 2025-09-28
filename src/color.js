@@ -223,7 +223,7 @@ export default class Color {
     }
 
     toMarkup(format) {
-        return ` <span fgcolor="${this.#fmt.Lo > Grey ? 'black' : 'white'}" bgcolor="${this.toHEX()}">${T.esc(this.toText(format))}</span>`;
+        return `<span fgcolor="${this.#fmt.Lo > Grey ? 'black' : 'white'}" bgcolor="${this.toHEX()}">${T.esc(this.toText(format))}</span>`;
     }
 
     toPreview() {

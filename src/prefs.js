@@ -97,11 +97,8 @@ class FormatItem extends GObject.Object {
     }
 
     constructor(fmt) {
-        super().set(fmt);
+        super()[$].set(fmt)[$].toggle(() => { this.enable = !this.enable; });
     }
-
-    toggle() { this.enable = !this.enable; }
-    dump() { return (({enable, name, format}) => ({enable, name, format}))(this); }
 }
 
 class FormatRow extends Adw.ActionRow {
@@ -160,26 +157,21 @@ class FormatList extends Adw.PreferencesGroup {
     }
 
     #buildWidgets(page) {
-        this.$fmts = new Gio.ListStore();
-        this.$save = f => { f(this.$fmts); this[UI.setv]([...this.$fmts].map(x => x.dump())); };
-        UI.once(() => this.$fmts.splice(0, 0, this.value.map(x => new FormatItem(x))), this);
-        let add = new Gio.ListStore()[$].append(new GObject.Object()),
-            fmt = new Gio.ListStore()[$].splice(0, 0, [this.$fmts, add]),
-            model = new Gtk.FlattenListModel({model: fmt});
+        let fmt = new Gio.ListStore(),
+            save = f => { f(fmt); this[UI.setv]([...fmt].map(({enable, name, format}) => ({enable, name, format}))); },
+            list = new Gtk.FlattenListModel({model: new Gio.ListStore()[$].splice(0, 0, [fmt, new Gio.ListStore()[$].append(new GObject.Object())])}),
+            trash = x => this.get_root().add_toast(new Adw.Toast({title: _('Removed <i>%s</i> format').format(x.name ?? ''), buttonLabel: _G('_Undo')})[$]
+            .connect('button-clicked', () => save(y => y.append(new FormatItem(x)))));
+        UI.once(() => fmt.splice(0, 0, this.value.map(x => new FormatItem(x))), this);
         this.add(new Gtk.ListBox({selectionMode: Gtk.SelectionMode.NONE, cssClasses: ['boxed-list']})[$]
-            .bind_model(model, obj => obj instanceof FormatItem ? new FormatRow(obj)[$$].connect([
-                ['toggled', (_w, p) => this.$save(x => x.get_item(p).toggle())],
-                ['dropped', (_w, p, q) => this.$save(x => x.insert(q, T.seq(x.get_item(p), () => x.remove(p))))],
-                ['removed', (_w, p) => this.$save(x => this.#onRemove(T.seq(x.get_item(p), () => x.remove(p))))],
-                ['changed', (_w, p) => page.dlg.choose(this.get_root(), this.$fmts.get_item(p)).then(([x]) => this.$save(y => y.get_item(p).set(x))).catch(T.nop)],
+            .bind_model(list, obj => obj instanceof FormatItem ? new FormatRow(obj)[$$].connect([
+                ['toggled', (_w, p) => save(x => x.get_item(p).toggle())],
+                ['dropped', (_w, p, q) => save(x => x.insert(q, T.seq(x.get_item(p), () => x.remove(p))))],
+                ['removed', (_w, p) => save(x => trash(T.seq(x.get_item(p), () => x.remove(p))))],
+                ['changed', (_w, p) => page.dlg.choose(this.get_root(), fmt.get_item(p)).then(([x]) => save(y => y.get_item(p).set(x))).catch(T.nop)],
             ]) : new Adw.ButtonRow({title: _('_New Color Format'), startIconName: 'list-add-symbolic', useUnderline: true})[$].connect(
-                'activated', () => page.dlg.choose(this.get_root()).then(([x]) => this.$save(y => y.append(new FormatItem({enable: true, ...x})))).catch(T.nop)
+                'activated', () => page.dlg.choose(this.get_root(), null).then(([x]) => save(y => y.append(new FormatItem({enable: true, ...x})))).catch(T.nop)
             )));
-    }
-
-    #onRemove(item) {
-        this.get_root().add_toast(new Adw.Toast({title: _('Removed <i>%s</i> format').format(item.name ?? ''), buttonLabel: _G('_Undo')})[$]
-            .connect('button-clicked', () => this.$save(x => x.append(new FormatItem(item)))));
     }
 }
 
@@ -218,7 +210,7 @@ class PrefsFormat extends UI.Page {
                     .bind_property_full('text', title, 'title', GObject.BindingFlags.DEFAULT, (_b, v) => [true, v || _('Edit Color Format')], null),
                 format = new Gtk.Entry({hexpand: true, placeholderText: HEX, cssClasses: ['monospace']})[$].connect('activate', () => dlg.$onChosen())[$]
                     .bind_property_full('text', title, 'subtitle', GObject.BindingFlags.DEFAULT, (_b, v) => [true, Color.sample(v)], null);
-            dlg.initChosen = x => { name.set({text: x?.name ?? '', sensitive: !x?.preset}); format.set_text(x?.format ?? ''); format.grab_focus(); };
+            dlg.initChosen = x => { name.set({text: x?.name ?? '', sensitive: !x?.preset}); format[$].set_text(x?.format ?? '').grab_focus(); };
             dlg.getChosen = () => ({name: name.get_text(), format: format.get_text()});
             return {
                 content: UI.Help.typeset(({d}) => [
